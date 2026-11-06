@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://santanna25.github.io/raufapo/sitemap.xml
