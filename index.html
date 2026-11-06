@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a0517">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <title>RAUFAPO — A Jornada dos Chefes</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <canvas id="particles" aria-hidden="true"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <main id="app">
+
+    <!-- ================= MENU PRINCIPAL ================= -->
+    <section id="screen-menu" class="screen menu-screen active">
+      <div class="menu-inner">
+        <div class="menu-copy">
+          <p class="eyebrow">Um RPG de conhecimento</p>
+          <h1 class="game-title" data-text="RAUFAPO">RAUFAPO</h1>
+          <p class="subtitle">A Jornada dos Chefes</p>
+          <p class="menu-lead">O reino foi tomado por oito criaturas lendárias. Só o conhecimento pode derrotá-las.</p>
+
+          <nav class="menu-buttons" aria-label="Menu principal">
+            <button class="menu-btn primary" data-action="continue" id="btn-continue">Continuar</button>
+            <button class="menu-btn" data-action="new-game" id="btn-new-game">Novo Jogo</button>
+            <button class="menu-btn" data-action="instructions">Instruções</button>
+            <button class="menu-btn" data-action="settings">Configurações</button>
+            <button class="menu-btn danger" data-action="exit">Sair do Jogo</button>
+          </nav>
+
+          <p class="menu-hint">Dica: pressione <kbd>Esc</kbd> durante uma batalha para pausar.</p>
+        </div>
+
+        <aside class="menu-hero" aria-hidden="true">
+          <div class="hero-glow"></div>
+          <div class="hero-frame">
+            <img id="menu-hero-img" src="assets/bosses/entidade-cosmica.jpg" alt="">
+            <div class="hero-fade"></div>
+            <div class="hero-caption">
+              <span class="hero-label">Ameaça à vista</span>
+              <strong id="menu-hero-name">A Entidade Cósmica</strong>
+            </div>
+          </div>
+          <div class="hero-runes">
+            <span>✦</span><span>✧</span><span>✦</span>
+          </div>
+        </aside>
+      </div>
+      <footer class="menu-footer">
+        <span>8 chefes</span><span class="dot">•</span><span>Responda certo para atacar</span><span class="dot">•</span><span>Não deixe o herói cair</span>
+      </footer>
+    </section>
+
+    <!-- ================= INSTRUÇÕES ================= -->
+    <section id="screen-instructions" class="screen info-screen">
+      <div class="info-card">
+        <button class="back-btn" data-action="back">← Voltar</button>
+        <p class="eyebrow">Manual do herói</p>
+        <h2>Como Jogar</h2>
+        <div class="info-scroll">
+          <p>Enfrente oito chefes em batalhas de conhecimento. Cada pergunta é um golpe: acerte para ferir o inimigo e sobreviva às respostas erradas.</p>
+          <ul class="rules-list">
+            <li><span class="rule-icon attack">⚔</span><div><strong>Resposta correta</strong><p>O chefe sofre <b>200 de dano</b>. São necessários cinco acertos para derrotá-lo.</p></div></li>
+            <li><span class="rule-icon hurt">☠</span><div><strong>Resposta errada</strong><p>O chefe contra-ataca e você perde vida. Se o HP do herói chegar a zero, é derrota.</p></div></li>
+            <li><span class="rule-icon potion">🧪</span><div><strong>Poções de cura</strong><p>Use uma poção durante a batalha para recuperar vida. Você ganha novas poções ao vencer chefes.</p></div></li>
+            <li><span class="rule-icon crown">👑</span><div><strong>Progresso</strong><p>Derrote um chefe para desbloquear o próximo. Ao vencer todos, o reino estará salvo.</p></div></li>
+          </ul>
+          <p class="info-note">Cada chefe tem um nível de dificuldade. As perguntas ficam mais desafiadoras conforme a jornada avança.</p>
+        </div>
+        <button class="menu-btn primary close-info" data-action="back">Entendi</button>
+      </div>
+    </section>
+
+    <!-- ================= CONFIGURAÇÕES ================= -->
+    <section id="screen-settings" class="screen info-screen">
+      <div class="info-card settings-card">
+        <button class="back-btn" data-action="back">← Voltar</button>
+        <p class="eyebrow">Ajustes da jornada</p>
+        <h2>Configurações</h2>
+
+        <div class="settings-list">
+          <label class="setting-row">
+            <span class="setting-copy"><strong>Efeitos sonoros</strong><small>Sons de acerto, erro e vitória.</small></span>
+            <input type="checkbox" id="set-sfx" checked>
+            <span class="switch" aria-hidden="true"></span>
+          </label>
+
+          <label class="setting-row">
+            <span class="setting-copy"><strong>Reduzir animações</strong><small>Desativa partículas e movimentos intensos.</small></span>
+            <input type="checkbox" id="set-motion">
+            <span class="switch" aria-hidden="true"></span>
+          </label>
+        </div>
+
+        <div class="settings-actions">
+          <button class="menu-btn primary" data-action="back">Voltar</button>
+          <button class="menu-btn danger ghost-danger" id="btn-reset-progress">Apagar progresso</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SELEÇÃO DE CHEFE ================= -->
+    <section id="screen-select" class="screen select-screen">
+      <header class="select-header">
+        <button class="back-btn" data-action="back-menu">← Menu</button>
+        <div class="select-title">
+          <p class="eyebrow">Mapa do reino</p>
+          <h2>Escolha o Chefe</h2>
+          <p id="select-subtitle">Derrote cada chefe para liberar o próximo desafio.</p>
+        </div>
+        <div class="player-chip">
+          <div class="chip-level"><small>Nível</small><strong id="select-level">1</strong></div>
+          <div class="chip-stat"><span class="coin">◉</span><strong id="select-gold">0</strong></div>
+          <div class="chip-stat"><span class="potion-mini">🧪</span><strong id="select-potions">1</strong></div>
+        </div>
+      </header>
+
+      <div id="boss-grid" class="boss-grid"></div>
+
+      <footer class="select-footer">
+        <p id="select-footer-text">O primeiro chefe aguarda. Escolha com sabedoria.</p>
+      </footer>
+    </section>
+
+    <!-- ================= BATALHA ================= -->
+    <section id="screen-battle" class="screen battle-screen">
+      <div class="battle-bg" id="battle-bg" aria-hidden="true"></div>
+
+      <header class="battle-topbar">
+        <button class="pause-btn" id="btn-pause" aria-label="Pausar batalha"><span>❚❚</span> Pausa</button>
+        <div class="battle-progress" id="battle-progress">Chefe 1 / 8</div>
+        <div class="battle-gold"><span class="coin">◉</span><span id="battle-gold">0</span></div>
+      </header>
+
+      <div class="battle-content">
+        <div class="boss-zone">
+          <div class="boss-plate">
+            <div class="boss-plate-head">
+              <span id="battle-boss-name">Chefe</span>
+              <span id="battle-boss-lv">Lv. 99</span>
+            </div>
+            <div class="hp-track boss-hp"><div id="boss-hp-fill"></div></div>
+            <div class="hp-caption"><span>HP do chefe</span><span id="boss-hp-text">999 / 999</span></div>
+          </div>
+
+          <div class="boss-frame" id="boss-frame">
+            <img id="battle-boss-img" src="" alt="">
+            <div class="boss-aura" aria-hidden="true"></div>
+            <div class="damage-layer" id="boss-damage-layer" aria-hidden="true"></div>
+          </div>
+
+          <p class="boss-taunt" id="boss-taunt">“Achou que sabia o bastante?”</p>
+        </div>
+
+        <div class="quiz-zone">
+          <div class="quiz-card" id="quiz-card">
+            <div class="quiz-meta">
+              <span id="question-number">Pergunta 1</span>
+              <span id="question-difficulty" class="difficulty-pill">Fácil</span>
+            </div>
+            <h3 id="question-text">Carregando pergunta...</h3>
+            <div id="answers" class="answers" role="group" aria-label="Alternativas"></div>
+            <div id="feedback" class="feedback" aria-live="polite"></div>
+          </div>
+
+          <div class="player-hud">
+            <div class="avatar" id="player-avatar">
+              <span>R</span>
+              <div class="damage-layer" id="player-damage-layer" aria-hidden="true"></div>
+            </div>
+            <div class="player-info">
+              <div class="player-line"><strong>Herói</strong><span id="player-level">Lv. 1</span></div>
+              <div class="stat-row">
+                <span class="stat-label">HP</span>
+                <div class="hp-track player-hp"><div id="player-hp-fill"></div></div>
+                <span class="stat-value" id="player-hp-text">120 / 120</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">MP</span>
+                <div class="hp-track player-mp"><div id="player-mp-fill"></div></div>
+                <span class="stat-value" id="player-mp-text">50 / 50</span>
+              </div>
+            </div>
+            <button class="potion-btn" id="btn-potion">
+              <span class="potion-icon">🧪</span>
+              <span class="potion-copy"><small>Usar poção</small><strong id="potion-count">x1</strong></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= VITÓRIA ================= -->
+    <section id="screen-victory" class="screen result-screen victory-screen">
+      <div class="result-glow" aria-hidden="true"></div>
+      <div class="result-emblem" aria-hidden="true">✦</div>
+      <p class="eyebrow">Batalha vencida</p>
+      <h2>Vitória!</h2>
+      <p class="result-text">Você derrotou o inimigo! Agora, prepare-se para o próximo desafio.</p>
+
+      <div class="rewards">
+        <div class="reward"><span class="reward-icon coin-icon">◉</span><div><small>Ouro</small><strong id="reward-gold">+0</strong></div></div>
+        <div class="reward"><span class="reward-icon exp-icon">✧</span><div><small>EXP</small><strong id="reward-exp">+0</strong></div></div>
+        <div class="reward item-reward"><span class="reward-icon">🧪</span><div><small>Item obtido</small><strong id="reward-item">Poção de Cura Avançada</strong></div></div>
+      </div>
+
+      <div id="victory-levelup" class="levelup hidden">Nível aumentado! <strong>Lv. <span id="victory-new-level">2</span></strong></div>
+      <button id="btn-victory-next" class="menu-btn primary">Avançar</button>
+    </section>
+
+    <!-- ================= DERROTA ================= -->
+    <section id="screen-defeat" class="screen result-screen defeat-screen">
+      <div class="result-glow danger-glow" aria-hidden="true"></div>
+      <div class="result-emblem" aria-hidden="true">☠</div>
+      <p class="eyebrow">A jornada continua</p>
+      <h2>Derrota</h2>
+      <p class="result-text">O chefe foi mais forte desta vez. Respire fundo, reveja suas respostas e tente novamente.</p>
+      <div class="defeat-line">Você foi derrotado por <strong id="defeat-boss">...</strong>.</div>
+      <div class="result-actions">
+        <button id="btn-retry" class="menu-btn primary">Tentar Novamente</button>
+        <button class="menu-btn" data-action="quit-menu">Menu Principal</button>
+      </div>
+    </section>
+
+    <!-- ================= CONCLUSÃO ================= -->
+    <section id="screen-completion" class="screen result-screen completion-screen">
+      <div class="result-glow" aria-hidden="true"></div>
+      <div class="result-emblem trophy" aria-hidden="true">🏆</div>
+      <p class="eyebrow">Lenda concluída</p>
+      <h2>Você concluiu o jogo!</h2>
+      <p class="result-text">Após uma jornada repleta de batalhas, desafios e superação, você derrotou todos os chefes e salvou o reino. Sua lenda nunca será esquecida.<br><br>Obrigado por jogar!</p>
+      <div id="completion-bosses" class="completion-bosses" aria-hidden="true"></div>
+      <div class="completion-stats">
+        <span>Nível <strong id="completion-level">9</strong></span>
+        <span>Ouro <strong id="completion-gold">0</strong></span>
+        <span>Chefes <strong>8 / 8</strong></span>
+      </div>
+      <button class="menu-btn primary" data-action="finish">Fim</button>
+    </section>
+
+  </main>
+
+  <!-- ================= PAUSE OVERLAY ================= -->
+  <div id="overlay-pause" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+    <div class="modal pause-modal">
+      <p class="eyebrow">Batalha pausada</p>
+      <h2 id="pause-title">Pausa</h2>
+      <p class="pause-boss" id="pause-boss-name">RAUFAPO</p>
+      <div class="modal-buttons">
+        <button class="menu-btn primary" data-action="resume">Continuar</button>
+        <button class="menu-btn" data-action="settings">Configurações</button>
+        <button class="menu-btn" data-action="instructions">Ver Instruções</button>
+        <button class="menu-btn" data-action="quit-menu">Sair para o Menu Principal</button>
+        <button class="menu-btn danger" data-action="exit">Sair do Jogo</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="game.js"></script>
+</body>
+</html>
